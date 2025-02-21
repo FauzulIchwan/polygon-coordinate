@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import img1 from './assets/img1.jpg';
+import { canvasConfig, canvasDotStyle, canvasLineStyle, canvasSize } from './config';
 
 const App = () => {
   const canvasRef = useRef(null);
@@ -9,7 +10,6 @@ const App = () => {
   const [mousePos, setMousePos] = useState(null);
   const [isCompleted, setIsCompleted] = useState(false);
 
-  // Load default image dari assets
   useEffect(() => {
     const img = new Image();
     img.src = img1;
@@ -19,7 +19,6 @@ const App = () => {
     };
   }, []);
 
-  // Fitur upload image: reset polygon jika gambar baru di-upload
   const handleImageUpload = (event) => {
     if (event.target.files && event.target.files[0]) {
       setImageLoaded(false);
@@ -37,7 +36,6 @@ const App = () => {
     }
   };
 
-  // Fungsi menggambar ulang canvas (gambar, titik, polygon, dan preview garis)
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !imageLoaded || !image) return;
@@ -45,9 +43,9 @@ const App = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Ukuran canvas tetap
-    const width = 600;
-    const height = 400;
+    const width = canvasSize.width;
+    const height = canvasSize.height;
+
     canvas.width = width;
     canvas.height = height;
 
@@ -62,10 +60,10 @@ const App = () => {
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(image, offsetX, offsetY, image.width * scale, image.height * scale);
 
-    // Gambar titik-titik polygon
-    ctx.fillStyle = 'red';
-    ctx.strokeStyle = 'red';
-    ctx.lineWidth = 2;
+    ctx.fillStyle = canvasLineStyle.fillStyle;
+    ctx.strokeStyle = canvasLineStyle.strokeStyle;
+    ctx.lineWidth = canvasLineStyle.lineWidth;
+
     polygonPoints.forEach(([x, y]) => {
       ctx.beginPath();
       ctx.arc(offsetX + x * scale, offsetY + y * scale, 5, 0, 2 * Math.PI);
@@ -91,7 +89,7 @@ const App = () => {
       // Jika ada minimal 3 titik, periksa apakah pointer mendekati titik awal (efek magnet)
       if (polygonPoints.length >= 3) {
         const [startX, startY] = polygonPoints[0];
-        const magnetRadius = 30;
+        const magnetRadius = canvasConfig.magnetRadius;
         const distance = Math.sqrt((mousePos.x - startX) ** 2 + (mousePos.y - startY) ** 2);
         if (distance < magnetRadius) {
           previewX = startX;
@@ -103,8 +101,8 @@ const App = () => {
       ctx.setLineDash([5, 5]); // garis putus-putus
       ctx.moveTo(offsetX + lastPoint[0] * scale, offsetY + lastPoint[1] * scale);
       ctx.lineTo(offsetX + previewX * scale, offsetY + previewY * scale);
-      ctx.strokeStyle = 'red';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = canvasDotStyle.strokeStyle;
+      ctx.lineWidth = canvasDotStyle.lineWidth;
       ctx.stroke();
       ctx.setLineDash([]); // reset dash
     }
@@ -122,11 +120,10 @@ const App = () => {
     const x = Math.round((event.clientX - rect.left) * (image.width / rect.width));
     const y = Math.round((event.clientY - rect.top) * (image.height / rect.height));
 
-    // Efek magnet: jika klik dekat titik awal dan sudah ada minimal 3 titik,
-    // maka seleksi dianggap selesai.
+    // Magnet
     if (polygonPoints.length > 0) {
       const [startX, startY] = polygonPoints[0];
-      const magnetRadius = 30;
+      const magnetRadius = canvasConfig.magnetRadius;
       const distance = Math.sqrt((x - startX) ** 2 + (y - startY) ** 2);
       if (distance <= magnetRadius && polygonPoints.length >= 3) {
         setPolygonPoints((prev) => [...prev, [startX, startY]]);
@@ -151,7 +148,6 @@ const App = () => {
     setMousePos(null);
   };
 
-  // Fitur Save JSON: download file JSON jika seleksi selesai
   const handleSaveJSON = () => {
     const data = JSON.stringify({ polygon_points: polygonPoints }, null, 2);
     const blob = new Blob([data], { type: 'application/json' });
@@ -165,7 +161,6 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Fungsi Undo: hapus titik terakhir
   const handleUndo = () => {
     setPolygonPoints((prev) => {
       if (prev.length === 0) return prev;
