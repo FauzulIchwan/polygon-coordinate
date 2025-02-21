@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import img1 from './assets/img1.jpg'; // ✅ Import gambar
+import img1 from './assets/img1.jpg';
 
 const App = () => {
   const canvasRef = useRef(null);
@@ -7,7 +7,6 @@ const App = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [image, setImage] = useState(null);
 
-  // Load gambar hanya sekali
   useEffect(() => {
     const img = new Image();
     img.src = img1;
@@ -17,7 +16,6 @@ const App = () => {
     };
   }, []);
 
-  // Menggambar ulang canvas
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !imageLoaded || !image) return;
@@ -25,7 +23,6 @@ const App = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Ukuran canvas tetap
     const width = 600;
     const height = 400;
     canvas.width = width;
@@ -44,7 +41,6 @@ const App = () => {
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(image, offsetX, offsetY, image.width * scale, image.height * scale);
 
-    // Gambar titik-titik
     ctx.fillStyle = 'red';
     ctx.strokeStyle = 'red';
     ctx.lineWidth = 2;
@@ -55,7 +51,6 @@ const App = () => {
       ctx.fill();
     });
 
-    // Hubungkan titik-titik sebagai polygon
     if (polygonPoints.length > 1) {
       ctx.beginPath();
       ctx.moveTo(offsetX + polygonPoints[0][0] * scale, offsetY + polygonPoints[0][1] * scale);
@@ -68,7 +63,6 @@ const App = () => {
     drawCanvas();
   }, [drawCanvas]);
 
-  // Fungsi untuk menangani klik pada canvas
   const handleCanvasClick = (event) => {
     if (!canvasRef.current || !image) return;
 
@@ -80,17 +74,14 @@ const App = () => {
       const [startX, startY] = polygonPoints[0]; // Titik awal polygon
       const magnetRadius = 20; // Radius magnet dalam satuan koordinat asli gambar
 
-      // Hitung jarak antara titik klik dan titik awal
       const distance = Math.sqrt((x - startX) ** 2 + (y - startY) ** 2);
 
-      // Jika dalam radius magnet, snap ke titik awal
       if (distance <= magnetRadius) {
         setPolygonPoints((prevPoints) => [...prevPoints, [startX, startY]]);
         return;
       }
     }
 
-    // Jika tidak dalam radius magnet, tambahkan titik baru
     setPolygonPoints((prevPoints) => [...prevPoints, [x, y]]);
   };
 
