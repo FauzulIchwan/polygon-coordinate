@@ -12,7 +12,7 @@ const App = () => {
 
   useEffect(() => {
     const img = new Image();
-    img.src = img1;
+    img.src = img1; // default image
     img.onload = () => {
       setImage(img);
       setImageLoaded(true);
