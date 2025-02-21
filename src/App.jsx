@@ -165,24 +165,39 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
+  // Fungsi Undo: hapus titik terakhir
+  const handleUndo = () => {
+    setPolygonPoints((prev) => {
+      if (prev.length === 0) return prev;
+      const newPoints = [...prev];
+      newPoints.pop();
+      setIsCompleted(false);
+      return newPoints;
+    });
+  };
+
   return (
     <div className="flex flex-col items-center gap-4">
+      {/* Fitur upload image */}
+
       <canvas ref={canvasRef} onClick={handleCanvasClick} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="border border-gray-400 cursor-crosshair" />
 
-      <div className="flex gap-2 w-auto">
+      <div className="flex flex-wrap items-center gap-2">
         <input
           type="file"
-          className="w-full text-gray-500 font-medium text-sm bg-gray-100 file:cursor-pointer cursor-pointer file:border-0 file:py-2 file:px-4 file:mr-4 file:bg-gray-800 file:hover:bg-gray-700 file:text-white rounded"
           accept="image/*"
           onChange={handleImageUpload}
+          className="w-auto text-gray-500 font-medium text-sm bg-gray-100 file:cursor-pointer file:border-0 file:py-2 file:px-4 file:bg-gray-800 file:hover:bg-gray-700 file:text-white rounded"
         />
-
+        <button onClick={handleUndo} className="px-4 py-2 text-white rounded-md bg-gray-800 hover:bg-gray-700" title="Undo">
+          ↶
+        </button>
         <button
           onClick={() => {
             setPolygonPoints([]);
             setIsCompleted(false);
           }}
-          className="px-4 py-2  text-white rounded-md bg-gray-800 hover:bg-gray-700"
+          className="px-4 py-2 text-white rounded-md bg-gray-800 hover:bg-gray-700"
         >
           Reset
         </button>
